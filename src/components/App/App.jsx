@@ -27,33 +27,44 @@ export const App = () => {
     const getApi = async () => {
       setLoading(true);
       try {
-        const { hits, totalHits } = await api.getImages(q, page);
+        const data = await api.getImages(q, page);
 
-        if (totalHits === 0 || hits === '') {
+        if (data.hits === 0) {
           Notiflix.Notify.warning(
             `There is no results upon your ${q}, please try again...`
           );
           return;
         }
-        setImages(prevImages => [...prevImages, ...hits]);
-
-        result(totalHits);
+        const normalizedImages = api.normalizedImages(data.hits);
+        setLoading(false);
+        setImages(prevImages => [...prevImages, ...normalizedImages]);
+        setResult(page >= Math.ceil(data.totalHits / 12));
+        setError(null);
       } catch (error) {
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
-    getApi();
-  }, [q, page, result]);
+    if (q !== '') {
+      getApi();
+    }
+  }, [q, page]);
   // componentDidUpdate(prevProps, prevState) {
   //   const { q, page } = this.state;
   //   if (prevState.q !== q || prevState.page !== page) {
   //     this.getApi(q, page);
   //   }
   // }
+
+  const loadingButton = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
   const handlSubmit = value => {
+    if (q === value) {
+      return;
+    }
     setq(value);
     setPage(1);
     setImages([]);
@@ -62,13 +73,10 @@ export const App = () => {
 
     // this.setState({ q: value, page: 1, images: [], result: 0, error: null });
   };
-  const loadingButton = () => {
-    setPage(prevPage => prevPage + 1);
-  };
 
   const onModalOpen = data => {
-    setIsOpen(true);
     setLargeImageURL(data);
+    setIsOpen(true);
   };
 
   const onModalClose = data => {
@@ -84,7 +92,9 @@ export const App = () => {
         <ImageGallery images={images} onModalOpen={onModalOpen} />
       )}
       {error && <ErrorMessage />}
-      {result > images.length && <Button loadingButton={loadingButton} />}
+      {!loading && images.length > 0 && !result && (
+        <Button loadingButton={loadingButton} />
+      )}
       {isOpen && (
         <Modal largeImageURL={largeImageURL} onModalClose={onModalClose} />
       )}

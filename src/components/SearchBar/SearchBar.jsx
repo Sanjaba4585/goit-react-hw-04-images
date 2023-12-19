@@ -5,13 +5,13 @@ export const SearchBar = ({ onSubmit }) => {
   const [value, setValue] = useState('');
 
   const handleInputChange = e => {
-    setValue(e.currentTarget.value.toLowerCase().trim());
+    setValue(e.target.value.toLowerCase().trim());
   };
 
   const handleFormSubmit = e => {
     e.preventDefault();
     onSubmit(value);
-    setValue(value);
+    setValue('');
   };
 
   return (

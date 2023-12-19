@@ -9,3 +9,7 @@ export const getImages = async (q, page) => {
   );
   return data;
 };
+export const normalizedImages = imagesArray =>
+  imagesArray.map(({ id, tags, webformatURL, largeImageURL }) => {
+    return { id, tags, webformatURL, largeImageURL };
+  });
